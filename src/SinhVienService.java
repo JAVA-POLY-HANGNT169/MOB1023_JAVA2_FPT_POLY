@@ -52,7 +52,7 @@ public class SinhVienService {
             }
             return "Vui long nhap thong tin sinh vien";
         }
-        return "Vui long chonj vi tri can update";
+        return "Vui long chon vi tri can update";
 
     }
 
