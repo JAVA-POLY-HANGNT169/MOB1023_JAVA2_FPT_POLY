@@ -5,6 +5,7 @@
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
@@ -16,57 +17,51 @@ import java.util.List;
  */
 public class SinhVienService {
 
-    public String ghiFile(String path, List<SinhVien> listSV) {
-        File file = new File(path);
-        try {
-            if (!file.exists()) {
-                file.createNewFile();
-            }
-            FileOutputStream fos = new FileOutputStream(file);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            for (SinhVien sinhVien : listSV) {
-                oos.writeObject(sinhVien);
-            }
-            oos.close();
-            fos.close();
-            return "Ghi file thành công!";
-        } catch (Exception e) {
-            return "Ghi file thất bại";
-        }
+    public List<String> fakeDataChuyenNganh() {
+        List<String> chuyenNganhs = new ArrayList<>();
+        chuyenNganhs.add("UDPM");
+        chuyenNganhs.add("PTPM");
+        chuyenNganhs.add("KTPM");
+        chuyenNganhs.add("ATTT");
+        return chuyenNganhs;
     }
 
-    public String docFile(String path, List<SinhVien> listSV) {
-        File file = new File(path);
-        try {
-            if (!file.exists()) {
-                System.out.println("Không tìm thấy file!");
-            }
-            FileInputStream fis = new FileInputStream(file);
-            ObjectInputStream ois = new ObjectInputStream(fis);
-            while (fis.available() > 0) {
-                listSV.add((SinhVien) ois.readObject());
-            }
-            ois.close();
-            fis.close();
-            return "Đọc file thành công!";
-        } catch (Exception e) {
-            return "Đọc file thất bại";
-        }
+    public List<SinhVien> fakeDataSinhVien() {
+        List<SinhVien> listSV = new ArrayList<>();
+        listSV.add(new SinhVien("SV1", "Sinh vien 1", "IT17300", true, 19, "PTPM"));
+        listSV.add(new SinhVien("SV2", "Sinh vien 2", "IT17301", false, 19, "TKW"));
+        listSV.add(new SinhVien("SV3", "Sinh vien 3", "IT17300", true, 20, "UDPM"));
+        listSV.add(new SinhVien("SV4", "Sinh vien 4", "IT17302", false, 19, "ADR"));
+        listSV.add(new SinhVien("SV5", "Sinh vien 5", "IT17300", true, 19, "PTPM"));
+        return listSV;
     }
 
-    public boolean update(List<SinhVien> listSV, int viTriUpdate, SinhVien svUpdate) {
-        boolean isUpdate = false;
-        for (int i = 0; i < listSV.size(); i++) {
-            if (i == viTriUpdate) {
+    public String addSinhVien(List<SinhVien> listSV, SinhVien sv) {
+        if (sv != null) {
+            listSV.add(sv);
+            return "Add thanh cong";
+        }
+        return " Add that bai";
+    }
+
+    public String updateSinhVien(List<SinhVien> listSV, int viTriUpdate, SinhVien svUpdate) {
+        if (viTriUpdate >= 0) {
+            if (svUpdate != null) {
                 listSV.set(viTriUpdate, svUpdate);
-                isUpdate = true;
+                return "Update thanh cong";
             }
+            return "Vui long nhap thong tin sinh vien";
         }
-        return isUpdate;
+        return "Vui long chonj vi tri can update";
+
     }
 
-    public void removeSV(List<SinhVien> listSV, int viTriRemove) {
-        listSV.remove(viTriRemove);
+    public String removeSinhVien(List<SinhVien> listSV, int viTriRemove) {
+        if (viTriRemove >= 0) {
+            listSV.remove(viTriRemove);
+            return "Remove thanh cong";
+        }
+        return " Remove that bai";
     }
 
     public List<SinhVien> searchTheoTen(List<SinhVien> listSV, String ten) {
@@ -87,5 +82,39 @@ public class SinhVienService {
             }
         }
         return listSearchTheoTuoi;
+    }
+
+    public String ghiFile(String path, List<SinhVien> listSV) {
+        File file = new File(path);
+        try {
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            try (FileOutputStream fos = new FileOutputStream(file); ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+                for (SinhVien sinhVien : listSV) {
+                    oos.writeObject(sinhVien);
+                }
+            }
+            return "Ghi file thành công!";
+        } catch (IOException e) {
+            return "Ghi file thất bại";
+        }
+    }
+
+    public String docFile(String path, List<SinhVien> listSV) {
+        File file = new File(path);
+        try {
+            if (!file.exists()) {
+                System.out.println("Không tìm thấy file!");
+            }
+            try (FileInputStream fis = new FileInputStream(file); ObjectInputStream ois = new ObjectInputStream(fis)) {
+                while (fis.available() > 0) {
+                    listSV.add((SinhVien) ois.readObject());
+                }
+            }
+            return "Đọc file thành công!";
+        } catch (IOException | ClassNotFoundException e) {
+            return "Đọc file thất bại";
+        }
     }
 }

@@ -17,98 +17,25 @@ public class ViewSinhVien extends javax.swing.JFrame {
 
     private DefaultTableModel dtm = new DefaultTableModel();
     private DefaultComboBoxModel dcbmChuyenNganh = new DefaultComboBoxModel();
-    private String path = "SinhVien.txt";
+    private final String path = "SinhVien.txt";
     private List<SinhVien> listSV = new ArrayList<>();
-    private SinhVienService sinhVienService = new SinhVienService();
+    private List<String> chuyenNganhs = new ArrayList<>();
+    private final SinhVienService sinhVienService = new SinhVienService();
 
     public ViewSinhVien() {
         initComponents();
-        tblSinhVien.setModel(dtm);
-        cbbChuyenNganh.setModel(dcbmChuyenNganh);
+        // set table và combobox 
+        dtm = (DefaultTableModel) tblSinhVien.getModel();
+        dcbmChuyenNganh = (DefaultComboBoxModel) cbbChuyenNganh.getModel();
+        // fake data
+        listSV = sinhVienService.fakeDataSinhVien();
+        chuyenNganhs = sinhVienService.fakeDataChuyenNganh();
+        // load data len table va combobox
         loadCbbChuyenNganh();
-        String header[] = {"Ma SV", "Ten SV", "Tuoi", "Gioi tinh", "Ten lop", "Chuyen nganh"};
-        dtm.setColumnIdentifiers(header);
-        fakeData(listSV);
         showData(listSV);
+        // fill phan tu
         SinhVien sinhVien = listSV.get(2);
         fillData(sinhVien);
-    }
-
-    private void showData(List<SinhVien> listSV) {
-        dtm.setRowCount(0);
-        for (SinhVien sinhVien : listSV) {
-            dtm.addRow(sinhVien.toDataRow());
-        }
-    }
-
-    private void loadCbbChuyenNganh() {
-        dcbmChuyenNganh.addElement("PTPM");
-        dcbmChuyenNganh.addElement("UDPM");
-        dcbmChuyenNganh.addElement("TKW");
-        dcbmChuyenNganh.addElement("ADR");
-    }
-
-    private void fakeData(List<SinhVien> listSV) {
-        listSV.add(new SinhVien("SV1", "Sinh vien 1", "IT17300", true, 19, "PTPM"));
-        listSV.add(new SinhVien("SV2", "Sinh vien 2", "IT17301", false, 19, "TKW"));
-        listSV.add(new SinhVien("SV3", "Sinh vien 3", "IT17300", true, 20, "UDPM"));
-        listSV.add(new SinhVien("SV4", "Sinh vien 4", "IT17302", false, 19, "ADR"));
-        listSV.add(new SinhVien("SV5", "Sinh vien 5", "IT17300", true, 19, "PTPM"));
-    }
-
-    private void fillData(SinhVien sinhVien) {
-        txtMaSV.setText(sinhVien.getMaSV());
-        txtTenSV.setText(sinhVien.getTenSV());
-        txtTenLop.setText(sinhVien.getTenLop());
-        txtTuoi.setText(String.valueOf(sinhVien.getTuoi()));
-        if (sinhVien.isGioiTinh()) {
-            rdoNam.setSelected(true);
-        } else {
-            rdoNu.setSelected(true);
-        }
-        dcbmChuyenNganh.setSelectedItem(sinhVien.getChuyenNganh());
-    }
-
-    private SinhVien svAddAndUpdate() {
-        if (checkValidate()) {
-            String maSV = txtMaSV.getText();
-            String tenSV = txtTenSV.getText();
-            String tenLop = txtTenLop.getText();
-            boolean gioiTinh = false;
-            if (rdoNam.isSelected()) {
-                gioiTinh = true;
-            }
-            int tuoi = Integer.valueOf(txtTuoi.getText());
-            String chuyenNganh = (String) dcbmChuyenNganh.getSelectedItem();
-            SinhVien sinhVien = new SinhVien(maSV, tenSV, tenLop, gioiTinh, tuoi, chuyenNganh);
-            return sinhVien;
-        } else {
-            return null;
-        }
-
-    }
-
-    private boolean checkValidate() {
-        boolean isCheck = false;
-        if (txtMaSV.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Ma khong duoc de trong");
-            return isCheck;
-        } else if (txtTenLop.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Ten lop khong duoc de trong");
-            return isCheck;
-        } else if (txtTenSV.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui long nhap ten!");
-            return isCheck;
-        } else if (txtTuoi.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui long nhap tuoi!");
-            return isCheck;
-        } else if (!txtTuoi.getText().matches("[0-9]+") || (Integer.valueOf(txtTuoi.getText()) <= 0)) {
-            JOptionPane.showMessageDialog(this, "Tuoi phai la so nguyen duong!");
-            return isCheck;
-        } else {
-            isCheck = true;
-            return isCheck;
-        }
     }
 
     @SuppressWarnings("unchecked")
@@ -328,13 +255,10 @@ public class ViewSinhVien extends javax.swing.JFrame {
 
         tblSinhVien.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+                "Mã SV", "Tên SV", "Tuổi", "Tên chuyên ngành", "Giới tính", "Tên lớp"
             }
         ));
         tblSinhVien.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -367,18 +291,21 @@ public class ViewSinhVien extends javax.swing.JFrame {
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
-                                        .addGap(33, 33, 33)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                             .addGroup(layout.createSequentialGroup()
-                                                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addGap(18, 18, 18)
-                                                .addComponent(txtMaSV, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                .addGap(33, 33, 33)
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                                    .addGroup(layout.createSequentialGroup()
+                                                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addGap(18, 18, 18)
+                                                        .addComponent(txtMaSV, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                    .addGroup(layout.createSequentialGroup()
+                                                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addComponent(txtTenSV))))
                                             .addGroup(layout.createSequentialGroup()
-                                                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(txtTenSV))
-                                            .addGroup(layout.createSequentialGroup()
-                                                .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(25, 25, 25)
+                                                .addComponent(jLabel11)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                                 .addComponent(txtTenLop)))
                                         .addGap(72, 72, 72))
@@ -460,10 +387,11 @@ public class ViewSinhVien extends javax.swing.JFrame {
                     .addComponent(btnRemove)
                     .addComponent(btnClear))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 15, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnDocFile)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(btnExit)
-                    .addComponent(btnGhiFile))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(btnDocFile)
+                        .addComponent(btnGhiFile)))
                 .addGap(28, 28, 28)
                 .addComponent(jLabel10)
                 .addGap(18, 18, 18)
@@ -486,30 +414,13 @@ public class ViewSinhVien extends javax.swing.JFrame {
     }//GEN-LAST:event_btnDocFileActionPerformed
 
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
-        if (svAddAndUpdate() != null) {
-            listSV.add(svAddAndUpdate());
-            JOptionPane.showMessageDialog(this, "Them thanh cong");
-        } else {
-            JOptionPane.showMessageDialog(this, "Them ko thanh cong");
-        }
+        JOptionPane.showMessageDialog(this, sinhVienService.addSinhVien(listSV, svAddAndUpdate()));
         showData(listSV);
     }//GEN-LAST:event_btnAddActionPerformed
 
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
         int viTriUpdate = tblSinhVien.getSelectedRow();
-        if (viTriUpdate < 0) {
-            JOptionPane.showMessageDialog(this, "Vui long chon doi tuong can update");
-        } else {
-            if (svAddAndUpdate() != null) {
-                if (sinhVienService.update(listSV, viTriUpdate, svAddAndUpdate())) {
-                    JOptionPane.showMessageDialog(this, "Update thanh cong");
-                } else {
-                    JOptionPane.showMessageDialog(this, "Update khong thanh cong");
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, "Update khong thanh cong");
-            }
-        }
+        JOptionPane.showMessageDialog(this, sinhVienService.updateSinhVien(listSV, viTriUpdate, svAddAndUpdate()));
         showData(listSV);
     }//GEN-LAST:event_btnUpdateActionPerformed
 
@@ -537,46 +448,92 @@ public class ViewSinhVien extends javax.swing.JFrame {
 
     private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveActionPerformed
         int viTriXoa = tblSinhVien.getSelectedRow();
-        if (viTriXoa < 0) {
-            JOptionPane.showMessageDialog(this, "Vui long chon doi tuong can xoa");
-        } else {
-            sinhVienService.removeSV(listSV, viTriXoa);
-            JOptionPane.showMessageDialog(this, "Da xoa");
-        }
+        JOptionPane.showMessageDialog(this, sinhVienService.removeSinhVien(listSV, viTriXoa));
         showData(listSV);
     }//GEN-LAST:event_btnRemoveActionPerformed
 
     private void btnSearchTheoTenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchTheoTenActionPerformed
-        if (txtTimKiemTen.getText().isEmpty()) {
+        String tenSearch = txtTimKiemTen.getText();
+        List<SinhVien> listTheoTen = sinhVienService.searchTheoTen(listSV, tenSearch);
+        if (listTheoTen.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Khong tim thay!");
             showData(listSV);
         } else {
-            String tenSearch = txtTimKiemTen.getText();
-            List<SinhVien> listTheoTen = sinhVienService.searchTheoTen(listSV, tenSearch);
-            if (listTheoTen.size() <= 0) {
-                JOptionPane.showMessageDialog(this, "Khong tim thay!");
-                showData(listSV);
-            } else {
-                showData(listTheoTen);
-            }
+            showData(listTheoTen);
         }
     }//GEN-LAST:event_btnSearchTheoTenActionPerformed
 
     private void btnSearchTeoTuoiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchTeoTuoiActionPerformed
-        if (txtMin.getText().isEmpty() || txtMax.getText().isEmpty()) {
-            showData(listSV);
-        } else if (!txtMin.getText().matches("[0-9]+") || !txtMax.getText().matches("[0-9]+")) {
-            JOptionPane.showMessageDialog(this, "Vui long nhap tuoi hop le!");
+        List<SinhVien> listTheoTuoi = sinhVienService.searchTheoTuoi(listSV,
+                Integer.valueOf(txtMin.getText()), Integer.valueOf(txtMax.getText()));
+        if (listTheoTuoi.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Khong co sinh vien nao trong do tuoi tim kiem!");
             showData(listSV);
         } else {
-            List<SinhVien> listTheoTuoi = sinhVienService.searchTheoTuoi(listSV, Integer.valueOf(txtMin.getText()), Integer.valueOf(txtMax.getText()));
-            if (listTheoTuoi.size() <= 0) {
-                JOptionPane.showMessageDialog(this, "Khong co sinh vien nao trong do tuoi tim kiem!");
-                showData(listSV);
-            } else {
-                showData(listTheoTuoi);
-            }
+            showData(listTheoTuoi);
         }
     }//GEN-LAST:event_btnSearchTeoTuoiActionPerformed
+
+    private void showData(List<SinhVien> listSV) {
+        dtm.setRowCount(0);
+        for (SinhVien sinhVien : listSV) {
+            dtm.addRow(sinhVien.toDataRow());
+        }
+    }
+
+    private void loadCbbChuyenNganh() {
+        dcbmChuyenNganh.addAll(chuyenNganhs);
+        dcbmChuyenNganh.setSelectedItem(0);
+    }
+
+    private void fillData(SinhVien sinhVien) {
+        txtMaSV.setText(sinhVien.getMaSV());
+        txtTenSV.setText(sinhVien.getTenSV());
+        txtTenLop.setText(sinhVien.getTenLop());
+        txtTuoi.setText(String.valueOf(sinhVien.getTuoi()));
+        if (sinhVien.isGioiTinh()) {
+            rdoNam.setSelected(true);
+        } else {
+            rdoNu.setSelected(true);
+        }
+        dcbmChuyenNganh.setSelectedItem(sinhVien.getChuyenNganh());
+    }
+
+    private SinhVien svAddAndUpdate() {
+        SinhVien sinhVien = null;
+        if (checkValidate()) {
+            String maSV = txtMaSV.getText();
+            String tenSV = txtTenSV.getText();
+            String tenLop = txtTenLop.getText();
+            boolean gioiTinh = false;
+            if (rdoNam.isSelected()) {
+                gioiTinh = true;
+            }
+            int tuoi = Integer.valueOf(txtTuoi.getText());
+            String chuyenNganh = (String) dcbmChuyenNganh.getSelectedItem();
+            sinhVien = new SinhVien(maSV, tenSV, tenLop, gioiTinh, tuoi, chuyenNganh);
+        }
+        return sinhVien;
+    }
+
+    private boolean checkValidate() {
+        boolean isCheck = false;
+        if (txtMaSV.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Ma khong duoc de trong");
+        } else if (txtTenLop.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Ten lop khong duoc de trong");
+        } else if (txtTenSV.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui long nhap ten!");
+        } else if (txtTuoi.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui long nhap tuoi!");
+        } else if (!txtTuoi.getText().matches("[0-9]+") || (Integer.valueOf(txtTuoi.getText()) <= 0)) {
+            JOptionPane.showMessageDialog(this, "Tuoi phai la so nguyen duong!");
+        } else {
+            isCheck = true;
+        }
+        return isCheck;
+
+    }
 
     /**
      * @param args the command line arguments
@@ -607,10 +564,8 @@ public class ViewSinhVien extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new ViewSinhVien().setVisible(true);
-            }
+        java.awt.EventQueue.invokeLater(() -> {
+            new ViewSinhVien().setVisible(true);
         });
     }
 
